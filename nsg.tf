@@ -1,5 +1,5 @@
 /* This terraform configuration creates security group to be used for setting rules for our Jenkins VM */
-
+/*
 resource "azurerm_network_security_group" "jenkins_security" {
   name                = "${var.config["security_group_name"]}"
   resource_group_name = "${azurerm_resource_group.res_group.name}"
@@ -29,3 +29,5 @@ resource "azurerm_network_security_group" "jenkins_security" {
     destination_address_prefix = "*"
   }
 }
+*/
+

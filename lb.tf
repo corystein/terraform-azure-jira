@@ -1,3 +1,4 @@
+/*
 resource "azurerm_public_ip" "jenkins_loadbalancer_publicip" {
   name                = "${var.config["network_public_ipaddress_name"]}"
   resource_group_name = "${azurerm_resource_group.res_group.name}"
@@ -51,3 +52,5 @@ resource "azurerm_lb_probe" "lb_probe" {
   interval_in_seconds = 5
   number_of_probes    = 2
 }
+*/
+

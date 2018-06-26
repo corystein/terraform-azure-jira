@@ -46,13 +46,14 @@ echo "Successfully installed Java"
 ####################################################################
 
 ####################################################################
-# Install Java
+# Install Jira
 ####################################################################
+# https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html
 cd /opt
 #For 64 Bit:
 wget https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-6.4.7-x64.bin
 chmod +x atlassian-jira-6.4.7-x64.bin
-# ./atlassian-jira-6.4.7-x64.bin
+# ./atlassian-jira-6.4.7-x64.bin q -varfile response.varfile
 ####################################################################
 
 echo "Executing [$0] complete"
