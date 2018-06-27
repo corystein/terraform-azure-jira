@@ -1,9 +1,9 @@
 #!/bin/bash
 ###################################################################
-# Script Name	:  jiraMaster.sh                                                                                            
-# Description	:  Install and configure a Jira                                                                               
-# Args         :  None                                                                                          
-# Author       :  Cory R. Stein                                                  
+# Script Name	:  installJira.sh                                                                                            
+# Description	:  Install and configure Jira                                                                               
+# Args          :  None                                                                                          
+# Author        :  Cory R. Stein                                                  
 ###################################################################
 
 echo "Executing [$0]..."
@@ -21,7 +21,7 @@ set -e
 ####################################################################
 # Base install
 ####################################################################
-yum install -y wget git
+yum install -y wget git openssl
 ####################################################################
 
 ####################################################################
@@ -52,16 +52,21 @@ echo "Successfully installed Java"
 echo "Creating unattended response file..."
 # https://jira.atlassian.com/browse/JRASERVER-36002
 cat > /tmp/response.varfile << EOL
-rmiPort$Long=8005
-app.jiraHome=/opt/atlassian/jira-home
+#rmiPort$Long=8005
+#app.jiraHome=/opt/atlassian/jira-home
+#app.install.service$Boolean=true
+#existingInstallationDir=/opt/JIRA
+#sys.confirmedUpdateInstallationString=false
+#sys.languageId=en
+#sys.installationDir=/opt/atlassian/jira
+#executeLauncherAction$Boolean=true
+#httpPort$Long=8080
+#portChoice=default
+
+executeLauncherAction$Boolean=true
 app.install.service$Boolean=true
-existingInstallationDir=/opt/JIRA
-sys.confirmedUpdateInstallationString=false
 sys.languageId=en
 sys.installationDir=/opt/atlassian/jira
-executeLauncherAction$Boolean=true
-httpPort$Long=8080
-portChoice=default
 EOL
 echo "Completed creating unattended response file"
 ####################################################################
@@ -70,7 +75,7 @@ echo "Completed creating unattended response file"
 # Install Jira
 ####################################################################
 echo "Installing Jira..."
-JIRA_VERSION=6.4.14
+JIRA_VERSION=7.1.8
 # https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html
 pushd /tmp
 
@@ -80,7 +85,8 @@ mkdir -p /opt/atlassian
 
 # Download installer
 echo "Downloadng installer..."
-wget -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}-x64.bin
+wget -q -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-${JIRA_VERSION}-jira-${JIRA_VERSION}-x64.bin
+#wget -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}-x64.bin
 echo "Completed downloading installer"
 
 # Set installer permissions
@@ -89,7 +95,7 @@ chmod +x atlassian-jira-x64.bin
 
 # Execute install
 echo "Executing installer..."
-./atlassian-jira-x64.bin -q -varfile /tmp/response.varfile
+./atlassian-jira-x64.bin -q -varfile response.varfile
 
 popd
 echo "Completed installing Jira"
