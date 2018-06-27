@@ -19,12 +19,11 @@ The following table describes the terraform files and their purpose.
 | ------------------- | ----------------- | 
 | variables.tf      | Contains variables and config values used for deployment| 
 | provider.tf       | Contains provider settings     |
-| rsg.tf       | Contains resource group settings     |
+| rsg.tf            | Contains resource group settings     |
 | nsg.tf            | Contains network security group     |   
-| network.tf       | Contains network settings     |
-| storage.tf       | Contains storage account settings     |
-| vm-master-primary.tf       | Jenkins master virtual machine (Primary)     |
-| vm-master-secondary.tf       | Jenkins master virtual machine (Secondary)     |
+| network.tf        | Contains network settings     |
+| storage.tf        | Contains storage account settings     |
+| vm-1.tf           | Jenkins master virtual machine |
 | lb.tf       | Load balancer     |
 
 Note: variables.tf should be customized for your specific settings
@@ -43,4 +42,7 @@ Run following commands to run & test Terraform scripts :
 
 ## Links
 
+https://terraform.io
+https://azure.microsoft.com
 http://www.techoism.com/how-to-install-jira-on-centosrhel/
+https://confluence.atlassian.com/adminjiraserver/installing-jira-applications-on-linux-938846841.html

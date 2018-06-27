@@ -21,7 +21,7 @@ set -e
 ####################################################################
 # Base install
 ####################################################################
-yum install -y wget curl git jenkins-ha-monitor
+yum install -y wget git
 ####################################################################
 
 ####################################################################
@@ -45,16 +45,57 @@ java -version
 echo "Successfully installed Java"
 ####################################################################
 
+
+####################################################################
+# Create Jira Response File
+####################################################################
+echo "Creating unattended response file..."
+# https://jira.atlassian.com/browse/JRASERVER-36002
+cat > /tmp/response.varfile << EOL
+rmiPort$Long=8005
+app.jiraHome=/opt/atlassian/jira-home
+app.install.service$Boolean=true
+existingInstallationDir=/opt/JIRA
+sys.confirmedUpdateInstallationString=false
+sys.languageId=en
+sys.installationDir=/opt/atlassian/jira
+executeLauncherAction$Boolean=true
+httpPort$Long=8080
+portChoice=default
+EOL
+echo "Completed creating unattended response file"
+####################################################################
+
 ####################################################################
 # Install Jira
 ####################################################################
+echo "Installing Jira..."
+JIRA_VERSION=6.4.14
 # https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html
-cd /opt
-#For 64 Bit:
-wget https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-6.4.7-x64.bin
-chmod +x atlassian-jira-6.4.7-x64.bin
-# ./atlassian-jira-6.4.7-x64.bin q -varfile response.varfile
+pushd /tmp
+
+# Create application directory
+echo "Creating [/opt/atlassian]..."
+mkdir -p /opt/atlassian
+
+# Download installer
+echo "Downloadng installer..."
+wget -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}-x64.bin
+echo "Completed downloading installer"
+
+# Set installer permissions
+echo "Setting permissions for installer..."
+chmod +x atlassian-jira-x64.bin
+
+# Execute install
+echo "Executing installer..."
+./atlassian-jira-x64.bin -q -varfile /tmp/response.varfile
+
+popd
+echo "Completed installing Jira"
 ####################################################################
+
+
 
 echo "Executing [$0] complete"
 exit 0

@@ -3,6 +3,7 @@ resource "azurerm_public_ip" "vm-pip" {
   location                     = "${azurerm_resource_group.res_group.location}"
   resource_group_name          = "${azurerm_resource_group.res_group.name}"
   public_ip_address_allocation = "static"
+  domain_name_label            = "crs-vm1-jira"
 }
 
 resource "azurerm_network_interface" "vm-nic" {
@@ -39,7 +40,7 @@ resource "azurerm_virtual_machine" "vm-1" {
   delete_os_disk_on_termination = true
 
   # Uncomment this line to delete the data disks automatically when deleting the VM
-  # delete_data_disks_on_termination = true
+  delete_data_disks_on_termination = true
 
   storage_image_reference {
     publisher = "${var.config["vm_image_publisher"]}"
@@ -47,6 +48,7 @@ resource "azurerm_virtual_machine" "vm-1" {
     sku       = "${var.config["vm_image_sku"]}"
     version   = "${var.config["vm_image_version"]}"
   }
+
   storage_os_disk {
     name              = "${var.config["vm_name"]}-os-disk"
     caching           = "ReadWrite"
@@ -54,6 +56,7 @@ resource "azurerm_virtual_machine" "vm-1" {
     create_option     = "FromImage"
     disk_size_gb      = "128"
   }
+
   storage_data_disk {
     name              = "${var.config["vm_name"]}-data-disk"
     managed_disk_type = "Standard_LRS"
@@ -61,11 +64,13 @@ resource "azurerm_virtual_machine" "vm-1" {
     lun               = 0
     disk_size_gb      = "512"
   }
+
   os_profile {
     computer_name  = "${var.config["vm_name"]}"
     admin_username = "${var.config["vm_username"]}"
     admin_password = "${var.config["vm_password"]}"
   }
+
   os_profile_linux_config {
     disable_password_authentication = false
   }
@@ -74,13 +79,8 @@ resource "azurerm_virtual_machine" "vm-1" {
 resource "null_resource" "remote-exec-vm-1" {
   provisioner "file" {
     connection {
-      type = "ssh"
-
-      #https    = false
-      #insecure = true
-      #port = "5985"
-      host = "${azurerm_public_ip.vm-1-pip.fqdn}"
-
+      type     = "ssh"
+      host     = "${azurerm_public_ip.vm-pip.ip_address}"
       user     = "${var.config["vm_username"]}"
       password = "${var.config["vm_password"]}"
 
@@ -90,4 +90,21 @@ resource "null_resource" "remote-exec-vm-1" {
     source      = "./scripts/"
     destination = "/tmp"
   }
+
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      host     = "${azurerm_public_ip.vm-pip.ip_address}"
+      user     = "${var.config["vm_username"]}"
+      password = "${var.config["vm_password"]}"
+    }
+
+    inline = [
+      "echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.sh",
+      "echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.bash",
+      "echo \"${var.config["vm_password"]}\" | sudo -S -k sh -c /tmp/installJira.sh",
+    ]
+  }
+
+  depends_on = ["azurerm_virtual_machine.vm-1"]
 }
