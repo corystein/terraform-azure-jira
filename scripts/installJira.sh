@@ -234,7 +234,8 @@ server {
         listen 80 default_server;
         listen [::]:80 default_server;
         server_name _;
-        return 301 https://\$host\$request_uri;
+        return 301 http://\$host\$request_uri;
+		#return 301 https://\$host\$request_uri;
 }
 
 
@@ -257,13 +258,14 @@ server {
         client_max_body_size 1G;
         # optimize downloading files larger than 1G - refer to nginx doc before adjusting
         #proxy_max_temp_file_size 2G;
-
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto "https";
-        location / {
-                proxy_pass http://localhost:8080;
+        
+        location /jira {
+			proxy_set_header Host \$host;
+        	proxy_set_header X-Real-IP \$remote_addr;
+        	proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        	#proxy_set_header X-Forwarded-Proto "https";
+			proxy_set_header X-Forwarded-Proto "http";
+            proxy_pass http://localhost:8080/jira;
         }
 }
 
@@ -289,7 +291,7 @@ echo "Starting Nginx service..."
 systemctl start nginx
 systemctl enable nginx
 # Configure selinux
-setsebool -P httpd_can_network_connect 1
+#setsebool -P httpd_can_network_connect 1
 echo "Completed restarting Nginx service"
 
 ####################################################################
