@@ -160,7 +160,9 @@ cat > /etc/systemd/system/jira.service << EOL
 Description=Jira service
 After=network-online.target
 
+
 [Service]
+Type=forking
 User=jira
 PrivateDevices=yes
 PrivateTmp=yes
@@ -172,8 +174,9 @@ CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
 NoNewPrivileges=yes
 Environment=JIRA_HOME=${HOME_DIR}
 ExecStart=${TARGET_DIR}/bin/start-jira.sh -fg
+ExecStop=${TARGET_DIR}/bin/stop-jira.sh
+ExecReload=${TARGET_DIR}/bin/stop-jira.sh | sleep 60 | /${TARGET_DIR}/bin/start-jira.sh
 ExecStartPost=/bin/sleep 3
-ExecStartPost=/bin/vault operator unseal $UNSEAL_KEY
 KillSignal=SIGINT
 TimeoutStopSec=30s
 Restart=on-failure
