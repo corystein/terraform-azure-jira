@@ -227,7 +227,7 @@ echo "Completed [/etc/nginx/conf.d/*]"
 
 # HTTP/S Configuration
 SERVER_NAME="localhost"
-DNS="gatt-nexus-oss.pwcinternal.com"
+DNS="yourdomain.com"
 SERVER_PORT="80"
 cat >/etc/nginx/sites-available/jira.conf <<EOL
 server {
