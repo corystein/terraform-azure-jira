@@ -83,8 +83,6 @@ resource "null_resource" "remote-exec-vm-1" {
       host     = "${azurerm_public_ip.vm-pip.ip_address}"
       user     = "${var.config["vm_username"]}"
       password = "${var.config["vm_password"]}"
-
-      #timeout  = "30s"
     }
 
     source      = "./scripts/"
@@ -101,8 +99,6 @@ resource "null_resource" "remote-exec-vm-1" {
 
     inline = [
       "echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.sh",
-
-      #"echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.bash",
       "echo \"${var.config["vm_password"]}\" | sudo -S -k sh -c /tmp/installJira.sh",
     ]
   }

@@ -85,12 +85,12 @@ echo "Successfully installed Java"
 ####################################################################
 
 ####################################################################
-# Install Jira
+# Install/Configure Jira
 ####################################################################
 echo "Installing Jira..."
 JIRA_VERSION=7.10.2
 # https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html
-pushd /tmp >/dev/null
+pushd /tmp > /dev/null
 
 # Create application directory
 TARGET_DIR=/opt/atlassian/jira
@@ -106,10 +106,7 @@ echo "Untar archive..."
 rm -rf /tmp/jira >/dev/null
 mkdir /tmp/jira >/dev/null
 tar -xzf atlassian-jira-software.tar.gz -C /tmp/jira --strip 1
-#ls /tmp/jira
 cp -R /tmp/jira/* ${TARGET_DIR}
-#cd ${TARGET_DIR}
-#tar -xf atlassian-jira-software-*.tar
 echo "Completed untaring archive"
 
 # Create user
@@ -138,50 +135,39 @@ echo "Completed creating home directory"
 
 # Set user home for application
 echo "Set user home for application..."
-echo "export JIRA_HOME=${HOME_DIR}" >>/home/jira/.bash_profile
+echo "export JIRA_HOME=${HOME_DIR}" >> /home/jira/.bash_profile
+echo "export JIRA_OPTS=-Datlassian.darkfeature.jira.onboarding.feature.disabled=true" >> /home/jira/.bash_profile
 echo "Completed setting user home for application"
 
 # Configure application ports
 #echo "Configure application ports..."
+#SEARCH=
+#REPLACE=
 #sed -i -e "s|$SEARCH|$REPLACE|g" ${TARGET_DIR}/conf/server.xml
 #echo "Completed configuring application ports"
 
-# Start server
-#echo "Starting Jira server..."
-#su - jira
-#cd ${TARGET_DIR}/bin
-#./start-jira.sh
-
+# Configure memory
+# Ref: https://confluence.atlassian.com/adminjiraserver073/increasing-jira-application-memory-861253796.html
+echo "Configure JIRA JVM memory..."
+sed -i -e "s|JVM_MAXIMUM_MEMORY=/"768m/"|JVM_MAXIMUM_MEMORY=/"2048m/"|g" ${TARGET_DIR}/bin/setenv.sh
+echo "Completed configuring JIRA JVM memory"
 
 # Create systemd file
+# Ref: https://community.atlassian.com/t5/Jira-questions/CentOS-7-systemd-startup-scripts-for-Jira-Fisheye/qaq-p/157575
 echo "Create systemd file..."
-cat > /etc/systemd/system/jira.service << EOL
+cat > /usr/lib/systemd/system/jira.service << EOL
 [Unit]
-Description=Jira service
-After=network-online.target
-
+Description=JIRA Service
+After=network.target
 
 [Service]
 Type=forking
 User=jira
-PrivateDevices=yes
-PrivateTmp=yes
-ProtectSystem=full
-ProtectHome=read-only
-SecureBits=keep-caps
-Capabilities=CAP_IPC_LOCK+ep
-CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
-NoNewPrivileges=yes
 Environment=JIRA_HOME=${HOME_DIR}
-ExecStart=${TARGET_DIR}/bin/start-jira.sh -fg
+PIDFile=${TARGET_DIR}/work/catalina.pid
+ExecStart=${TARGET_DIR}/bin/start-jira.sh
 ExecStop=${TARGET_DIR}/bin/stop-jira.sh
 ExecReload=${TARGET_DIR}/bin/stop-jira.sh | sleep 60 | /${TARGET_DIR}/bin/start-jira.sh
-ExecStartPost=/bin/sleep 3
-KillSignal=SIGINT
-TimeoutStopSec=30s
-Restart=on-failure
-StartLimitInterval=60s
-StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target
@@ -189,14 +175,25 @@ EOL
 
 echo "Enable Jira service..."
 systemctl enable jira.service
+echo "Completed enabling Jira service"
 echo "Starting Jira service..."
 systemctl start jira.service
+echo "Completed starting Jira service"
 echo "Jira service status..."
 systemctl status jira.service
+echo "Completed Jira status"
 echo "Completed creating systemd file"
 
-popd >/dev/null
+popd > /dev/null
 echo "Completed installing Jira"
+####################################################################
+
+
+####################################################################
+# Install/Configure Nginx
+####################################################################
+# https://confluence.atlassian.com/jirakb/integrating-jira-with-nginx-426115340.html
+#yum install -y nginx
 ####################################################################
 
 echo "Executing [$0] complete"
