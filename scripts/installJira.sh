@@ -47,7 +47,7 @@ JAVA_KEY_VERSION=8u171
 JAVA_VERSION=1.8.0_171
 cd /tmp
 
-wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "${JAVA_DOWNLOAD_URL}"
+wget -q --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "${JAVA_DOWNLOAD_URL}"
 
 if [ -f jdk-${JAVA_KEY_VERSION}-linux-${JAVA_BIT_VERSION}.rpm ]; then
 	echo "Installing Java..."
@@ -106,7 +106,7 @@ echo "Untar archive..."
 rm -rf /tmp/jira >/dev/null
 mkdir /tmp/jira >/dev/null
 tar -xzf atlassian-jira-software.tar.gz -C /tmp/jira --strip 1
-ls /tmp/jira
+#ls /tmp/jira
 cp -R /tmp/jira/* ${TARGET_DIR}
 #cd ${TARGET_DIR}
 #tar -xf atlassian-jira-software-*.tar
@@ -114,9 +114,9 @@ echo "Completed untaring archive"
 
 # Create user
 if ! id -u "jira" >/dev/null 2>&1; then
-	echo "Create jira user..."
+	echo "Create Jira user..."
 	/usr/sbin/useradd --create-home --comment "Account for running JIRA Software" --shell /bin/bash jira
-	echo "Completed creating jira user"
+	echo "Completed creating Jira user"
 else
 	echo "Jira user already exists"
 fi
@@ -147,10 +147,50 @@ echo "Completed setting user home for application"
 #echo "Completed configuring application ports"
 
 # Start server
-echo "Starting Jira server..."
-su - jira
-cd ${TARGET_DIR}/bin
-./start-jira.sh
+#echo "Starting Jira server..."
+#su - jira
+#cd ${TARGET_DIR}/bin
+#./start-jira.sh
+
+
+# Create systemd file
+echo "Create systemd file..."
+cat > /etc/systemd/system/jira.service << EOL
+[Unit]
+Description=Jira service
+After=network-online.target
+
+[Service]
+User=jira
+PrivateDevices=yes
+PrivateTmp=yes
+ProtectSystem=full
+ProtectHome=read-only
+SecureBits=keep-caps
+Capabilities=CAP_IPC_LOCK+ep
+CapabilityBoundingSet=CAP_SYSLOG CAP_IPC_LOCK
+NoNewPrivileges=yes
+Environment=JIRA_HOME=${HOME_DIR}
+ExecStart=${TARGET_DIR}/bin/start-jira.sh -fg
+ExecStartPost=/bin/sleep 3
+ExecStartPost=/bin/vault operator unseal $UNSEAL_KEY
+KillSignal=SIGINT
+TimeoutStopSec=30s
+Restart=on-failure
+StartLimitInterval=60s
+StartLimitBurst=3
+
+[Install]
+WantedBy=multi-user.target
+EOL
+
+echo "Enable Jira service..."
+systemctl enable jira.service
+echo "Starting Jira service..."
+systemctl start jira.service
+echo "Jira service status..."
+systemctl status jira.service
+echo "Completed creating systemd file"
 
 popd >/dev/null
 echo "Completed installing Jira"
