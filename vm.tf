@@ -101,7 +101,8 @@ resource "null_resource" "remote-exec-vm-1" {
 
     inline = [
       "echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.sh",
-      "echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.bash",
+
+      #"echo \"${var.config["vm_password"]}\" | sudo -S -k chmod -R +x /tmp/*.bash",
       "echo \"${var.config["vm_password"]}\" | sudo -S -k sh -c /tmp/installJira.sh",
     ]
   }

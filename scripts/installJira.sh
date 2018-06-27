@@ -1,16 +1,15 @@
 #!/bin/bash
 ###################################################################
-# Script Name	:  installJira.sh                                                                                            
-# Description	:  Install and configure Jira                                                                               
-# Args          :  None                                                                                          
-# Author        :  Cory R. Stein                                                  
+# Script Name	:  installJira.sh
+# Description	:  Install and configure Jira
+# Args          :  None
+# Author        :  Cory R. Stein
 ###################################################################
 
 echo "Executing [$0]..."
 PROGNAME=$(basename $0)
 
 set -e
-
 
 ####################################################################
 # Execute updates
@@ -36,72 +35,126 @@ echo "Successfully disabled SELINUX"
 ####################################################################
 
 ####################################################################
-# Install Java
+# Install Java (Jira does not work with Open JDK)
 ####################################################################
 echo "Installing Java..."
 # https://www.digitalocean.com/community/tutorials/how-to-install-java-on-centos-and-fedora
-yum install -y java-1.8.0-openjdk
+#yum install -y java-1.8.0-openjdk
+#JAVA_DOWNLOAD_URL=http://download.oracle.com/otn-pub/java/jdk/8u162-b12/0da788060d494f5095bf8624735fa2f1/jdk-8u162-linux-x64.rpm
+JAVA_DOWNLOAD_URL=http://download.oracle.com/otn-pub/java/jdk/8u171-b11/512cd62ec5174c3487ac17c61aaa89e8/jdk-8u171-linux-x64.rpm
+JAVA_BIT_VERSION=x64
+JAVA_KEY_VERSION=8u171
+JAVA_VERSION=1.8.0_171
+cd /tmp
+
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "${JAVA_DOWNLOAD_URL}"
+
+if [ -f jdk-${JAVA_KEY_VERSION}-linux-${JAVA_BIT_VERSION}.rpm ]; then
+	echo "Installing Java..."
+	rpm -ivh --force jdk-${JAVA_KEY_VERSION}-linux-${JAVA_BIT_VERSION}.rpm
+	echo "Update environment variables complete"
+fi
+
 java -version
 echo "Successfully installed Java"
 ####################################################################
 
-
 ####################################################################
 # Create Jira Response File
 ####################################################################
-echo "Creating unattended response file..."
-# https://jira.atlassian.com/browse/JRASERVER-36002
-cat > /tmp/response.varfile << EOL
-#rmiPort$Long=8005
-#app.jiraHome=/opt/atlassian/jira-home
-#app.install.service$Boolean=true
-#existingInstallationDir=/opt/JIRA
-#sys.confirmedUpdateInstallationString=false
-#sys.languageId=en
-#sys.installationDir=/opt/atlassian/jira
-#executeLauncherAction$Boolean=true
-#httpPort$Long=8080
-#portChoice=default
+# echo "Creating unattended response file..."
+# # https://jira.atlassian.com/browse/JRASERVER-36002
+# cat > /tmp/response.varfile << EOL
+# #rmiPort$Long=8005
+# #app.jiraHome=/opt/atlassian/jira-home
+# #app.install.service$Boolean=true
+# #existingInstallationDir=/opt/JIRA
+# #sys.confirmedUpdateInstallationString=false
+# #sys.languageId=en
+# #sys.installationDir=/opt/atlassian/jira
+# #executeLauncherAction$Boolean=true
+# #httpPort$Long=8080
+# #portChoice=default
 
-executeLauncherAction$Boolean=true
-app.install.service$Boolean=true
-sys.languageId=en
-sys.installationDir=/opt/atlassian/jira
-EOL
-echo "Completed creating unattended response file"
+# executeLauncherAction$Boolean=true
+# app.install.service$Boolean=true
+# sys.languageId=en
+# sys.installationDir=/opt/atlassian/jira
+# EOL
+# echo "Completed creating unattended response file"
 ####################################################################
 
 ####################################################################
 # Install Jira
 ####################################################################
 echo "Installing Jira..."
-JIRA_VERSION=7.1.8
+JIRA_VERSION=7.10.2
 # https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html
-pushd /tmp
+pushd /tmp >/dev/null
 
 # Create application directory
-echo "Creating [/opt/atlassian]..."
-mkdir -p /opt/atlassian
+TARGET_DIR=/opt/atlassian/jira
+echo "Creating [${TARGET_DIR}]..."
+mkdir -p ${TARGET_DIR}
 
-# Download installer
-echo "Downloadng installer..."
-wget -q -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-${JIRA_VERSION}-jira-${JIRA_VERSION}-x64.bin
-#wget -O atlassian-jira-x64.bin https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-${JIRA_VERSION}-x64.bin
-echo "Completed downloading installer"
+# Download archive
+echo "Downloadng archive..."
+wget -q -O atlassian-jira-software.tar.gz https://www.atlassian.com/software/jira/downloads/binary/atlassian-jira-software-${JIRA_VERSION}.tar.gz
+echo "Completed downloading archive"
+
+echo "Untar archive..."
+rm -rf /tmp/jira >/dev/null
+mkdir /tmp/jira >/dev/null
+tar -xzf atlassian-jira-software.tar.gz -C /tmp/jira --strip 1
+ls /tmp/jira
+cp -R /tmp/jira/* ${TARGET_DIR}
+#cd ${TARGET_DIR}
+#tar -xf atlassian-jira-software-*.tar
+echo "Completed untaring archive"
+
+# Create user
+if ! id -u "jira" >/dev/null 2>&1; then
+	echo "Create jira user..."
+	/usr/sbin/useradd --create-home --comment "Account for running JIRA Software" --shell /bin/bash jira
+	echo "Completed creating jira user"
+else
+	echo "Jira user already exists"
+fi
 
 # Set installer permissions
-echo "Setting permissions for installer..."
-chmod +x atlassian-jira-x64.bin
+echo "Setting permissions..."
+chown -R jira ${TARGET_DIR}
+chmod -R u=rwx,go-rwx ${TARGET_DIR}
+echo "Completed setting permissions"
+#chmod +x atlassian-jira-x64.bin
 
-# Execute install
-echo "Executing installer..."
-./atlassian-jira-x64.bin -q -varfile response.varfile
+# Create home directory
+echo "Create home directory..."
+HOME_DIR=/var/jirasoftware-home
+mkdir -p ${HOME_DIR} > /dev/null
+chown -R jira ${HOME_DIR}
+chmod -R u=rwx,go-rwx ${HOME_DIR}
+echo "Completed creating home directory"
 
-popd
+# Set user home for application
+echo "Set user home for application..."
+echo "export JIRA_HOME=${HOME_DIR}" >>/home/jira/.bash_profile
+echo "Completed setting user home for application"
+
+# Configure application ports
+#echo "Configure application ports..."
+#sed -i -e "s|$SEARCH|$REPLACE|g" ${TARGET_DIR}/conf/server.xml
+#echo "Completed configuring application ports"
+
+# Start server
+echo "Starting Jira server..."
+su - jira
+cd ${TARGET_DIR}/bin
+./start-jira.sh
+
+popd >/dev/null
 echo "Completed installing Jira"
 ####################################################################
-
-
 
 echo "Executing [$0] complete"
 exit 0
