@@ -34,10 +34,12 @@ docker run --rm -it `
 ##################################################
 # Validation
 ##################################################
-if (-not (Test-Path env:subscription_id)) { throw "Enviornment variable [subscription_id] is REQUIRED" }
-if (-not (Test-Path env:client_id)) { throw "Enviornment variable [client_id] is REQUIRED" }
-if (-not (Test-Path env:client_secret)) { throw "Enviornment variable [client_secret] is REQUIRED" }
-if (-not (Test-Path env:tenant_id)) { throw "Enviornment variable [tenant_id] is REQUIRED" }
+if (-not($UseTfVarsFile)) {
+    if (-not (Test-Path env:subscription_id)) { throw "Enviornment variable [subscription_id] is REQUIRED" }
+    if (-not (Test-Path env:client_id)) { throw "Enviornment variable [client_id] is REQUIRED" }
+    if (-not (Test-Path env:client_secret)) { throw "Enviornment variable [client_secret] is REQUIRED" }
+    if (-not (Test-Path env:tenant_id)) { throw "Enviornment variable [tenant_id] is REQUIRED" }
+}
 ##################################################
 
 ###################################################################################
@@ -54,9 +56,11 @@ function main() {
         [Environment]::SetEnvironmentVariable("AZURE_CLI_DISABLE_CONNECTION_VERIFICATION", "1", "Process")
 
 
-        az login --service-principal -u "$($Env:client_id)" -p "$($Env:client_secret)" --tenant "$($Env:tenant_id)"
-        if ($LASTEXITCODE -ne 0) { throw "Failure logging in to Azure"}
-        az account get-access-token
+        if (-not($UseTfVarsFile)) {
+            az login --service-principal -u "$($Env:client_id)" -p "$($Env:client_secret)" --tenant "$($Env:tenant_id)"
+            if ($LASTEXITCODE -ne 0) { throw "Failure logging in to Azure"}
+            az account get-access-token
+        }
         #return
 
         # Create tfvars file
@@ -69,7 +73,8 @@ client_secret = "$($Env:client_secret)"
 tenant_id = "$($Env:tenant_id)"
 "@ 
             $terraformvars | Out-File -FilePath .\terraform.tfvars -Encoding ASCII -Force
-        } else {
+        }
+        else {
             Write-Warning "Using TfVars File"
         }
 
@@ -112,8 +117,10 @@ tenant_id = "$($Env:tenant_id)"
     }
     finally {
         # Clean up
-        if (Test-Path .\terraform.tfvars) {
-            Remove-Item -Path .\terraform.tfvars -Force | Out-Null
+        if (-not($UseTfVarsFile)) {
+            if (Test-Path .\terraform.tfvars) {
+                Remove-Item -Path .\terraform.tfvars -Force | Out-Null
+            }
         }
     }
 } 

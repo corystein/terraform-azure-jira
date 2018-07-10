@@ -12,18 +12,28 @@ PROGNAME=$(basename $0)
 
 set -e
 
+#################################################################
+# Check if run as root
+#################################################################
+#if [ ! $(id -u) -eq 0 ]; then
+#    echo "ERROR: Script [$0] must be run as root, Script terminating"
+#    exit 7
+#fi
+#################################################################
+
+################################################################################
+# BEGIN : Functions
+################################################################################
 #Help function
 function usage() {
-	echo -e \\n"Help documentation for ${BOLD}${SCRIPT}.${NORM}"\\n
-	echo -e "${REV}Basic usage:${NORM} ${BOLD}$SCRIPT"\\n
-	echo "Command line switches are optional. The following switches are recognized."
-	echo "${REV}-s${NORM}  --Sets the value for option ${BOLD}s${NORM}."
-	echo "${REV}-u${NORM}  --Sets the value for option ${BOLD}u${NORM}."
-	echo "${REV}-p${NORM}  --Sets the value for option ${BOLD}p${NORM}."
-	echo -e "${REV}-h${NORM}  --Displays this help message. No further functions are performed."\\n
-	echo -e "Example: ${BOLD}$SCRIPT -s server -u username -p password "\\n
+	echo -e \\n"Help documentation for $PROGNAME"\\n
+	echo -e "Usage: $PROGNAME -s <servername> -u <username> -p <password>"\\n
+	echo -e "Example: $PROGNAME -s server -u username -p password "\\n
 	exit 1
 }
+################################################################################
+# END : Functions
+################################################################################
 
 #Check the number of arguments. If none are passed, print help and exit.
 NUMARGS=$#
@@ -40,34 +50,37 @@ fi
 #Notice there is no ":" after "h". The leading ":" suppresses error messages from
 #getopts. This is required to get my unrecognized option code to work.
 
-while getopts :s:u:p:h FLAG; do
-	case $FLAG in
-	s) #set option "a"
-		SERVER=$OPTARG
-		echo "-s used: $OPTARG"
-		echo "SERVER = $SERVER"
+while getopts ":s:u:p:h" OPT; do
+	case ${OPT} in
+	s) #set option "s"
+		SERVER=$(echo "${OPTARG}")
+		#echo "-s used: $OPTARG"
+		echo "SERVER = [$SERVER]"
 		;;
-	u) #set option "a"
-		USER=$OPTARG
-		echo "-u used: $OPTARG"
-		echo "USER = $USER"
+	u) #set option "u"
+		USER=$(echo "${OPTARG}")
+		#echo "-u used: $OPTARG"
+		echo "USER = [$USER]"
 		;;
-	p) #set option "a"
-		PASSWORD=$OPTARG
-		echo "-p used: $OPTARG"
-		echo "PASSWORD = $PASSWORD"
+	p) #set option "p"
+		PASSWORD=$(echo "${OPTARG}")
+		#echo "-p used: $OPTARG"
+		echo "PASSWORD = [$PASSWORD]"
+		;;
+	t)
+		TESTING='TRUE'
 		;;
 	h) #show help
 		usage
 		;;
-	\?) #unrecognized option - show help
-		echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed."
-		usage
-		#If you just want to display a simple error message instead of the full
-		#help, remove the 2 lines above and uncomment the 2 lines below.
-		#echo -e "Use ${BOLD}$SCRIPT -h${NORM} to see the help documentation."\\n
-		#exit 2
-		;;
+	#\?) #unrecognized option - show help
+	#	echo -e \\n"Option -${BOLD}$OPTARG${NORM} not allowed."
+	#	usage
+	#	#If you just want to display a simple error message instead of the full
+	#	#help, remove the 2 lines above and uncomment the 2 lines below.
+	#	#echo -e "Use ${BOLD}$SCRIPT -h${NORM} to see the help documentation."\\n
+	#	#exit 2
+	#	;;
 	esac
 done
 
@@ -76,6 +89,38 @@ shift $((OPTIND - 1)) #This tells getopts to move on to the next argument.
 ### End getopts code ###
 #}
 #process_args
+
+
+################################################################################
+# Verify we were passed required parameters
+################################################################################
+if [ "${SERVER}" == '' ]; then
+	echo "Missing required parameter for Server (-s option)" 1>&2
+	exit 1
+fi
+if [ "${USER}" == '' ]; then
+	echo "Missing required parameter for User (-u option)" 1>&2
+	exit 1
+fi
+if [ "${PASSWORD}" == '' ]; then
+	echo "Missing required parameter for Password(-p option)" 1>&2
+	exit 1
+fi
+################################################################################
+
+################################################################################
+# Display passed variabled when using -t switch
+################################################################################
+if [ "${TESTING}" == 'TRUE' ] ; then
+    echo "Server: [${SERVER}]"
+fi
+if [ "${TESTING}" == 'TRUE' ] ; then
+    echo "User: [${USER}]"
+fi
+if [ "${TESTING}" == 'TRUE' ] ; then
+    echo "Password: [${PASSWORD}]"
+fi
+################################################################################
 
 ####################################################################
 # Install packages
