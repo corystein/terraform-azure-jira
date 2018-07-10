@@ -46,14 +46,21 @@ variable "config" {
     "vm_image_sku"       = "7.3"
     "vm_image_version"   = "latest"
     /*
-            "availability_set_name"               = "jenkinsAvailabilitySet"
-            "jenkins_master_primary_ip_address"   = "10.199.10.18"
-            "jenkins_master_secondary_ip_address" = "10.199.10.19"
-            "jenkins_master_primrary_nic"         = "jenkins_master_primary_nic"
-            "jenkins_master_secondary_nic"        = "jenkins_master_secondary_nic"
-            "os_name"                             = "centosJenkins01"
-            */
+                                                            "availability_set_name"               = "jenkinsAvailabilitySet"
+                                                            "jenkins_master_primary_ip_address"   = "10.199.10.18"
+                                                            "jenkins_master_secondary_ip_address" = "10.199.10.19"
+                                                            "jenkins_master_primrary_nic"         = "jenkins_master_primary_nic"
+                                                            "jenkins_master_secondary_nic"        = "jenkins_master_secondary_nic"
+                                                            "os_name"                             = "centosJenkins01"
+                                                            */
     "vm_username" = "os_admin"
     "vm_password" = "P@ssword12345"
+    ###############################
+    # Azure SQL DB
+    ###############################
+    "sql_srv_name" = "jira-sql-srv-01"
+    "db_name"       = "jiradb"
+    "sql_admin"     = "4dm1n157r470r"
+    "sql_admin_pwd" = "4-v3ry-53cr37-p455w0rd"
   }
 }

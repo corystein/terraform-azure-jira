@@ -103,5 +103,18 @@ resource "null_resource" "remote-exec-vm-1" {
     ]
   }
 
-  depends_on = ["azurerm_virtual_machine.vm-1"]
+  provisioner "remote-exec" {
+    connection {
+      type     = "ssh"
+      host     = "${azurerm_public_ip.vm-pip.ip_address}"
+      user     = "${var.config["vm_username"]}"
+      password = "${var.config["vm_password"]}"
+    }
+
+    inline = [
+      "echo \"${var.config["vm_password"]}\" | sudo -S -k sh -c /tmp/configJiraDb.sh -s \"${azurerm_sql_server.sql_srv.fully_qualified_domain_name}\" -u \"${azurerm_sql_server.sql_srv.administrator_login}\" -p \"${azurerm_sql_server.sql_srv.administrator_login_password}\"",
+    ]
+  }
+
+  depends_on = ["azurerm_virtual_machine.vm-1", "azurerm_sql_server.sql_srv", "azurerm_sql_database.sql_db"]
 }

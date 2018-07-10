@@ -43,6 +43,9 @@ Run following commands to run & test Terraform scripts :
 ## Links
 
 https://terraform.io
+
 https://azure.microsoft.com
+
 http://www.techoism.com/how-to-install-jira-on-centosrhel/
+
 https://confluence.atlassian.com/adminjiraserver/installing-jira-applications-on-linux-938846841.html
