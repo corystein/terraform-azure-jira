@@ -1,5 +1,9 @@
 # terraform-azure-jira
 
+This repository contains scripts to assist with deploying Jira using Terraform to Azure.  This will include a single VM using Azure SQL for the database server.
+
+## Azure requirements
+
 Setup you private Azure creds before running the script :
 
 ```
@@ -19,14 +23,16 @@ The following table describes the terraform files and their purpose.
 
 | File                | Description       | 
 | ------------------- | ----------------- | 
-| variables.tf      | Contains variables and config values used for deployment| 
-| provider.tf       | Contains provider settings     |
-| rsg.tf            | Contains resource group settings     |
-| nsg.tf            | Contains network security group     |   
-| network.tf        | Contains network settings     |
-| storage.tf        | Contains storage account settings     |
-| vm-1.tf           | Jenkins master virtual machine |
-| lb.tf       | Load balancer     |
+| variables.tf        | Contains variables and config values used for deployment| 
+| provider.tf         | Contains provider settings     |
+| rsg.tf              | Contains resource group settings     |
+| nsg.tf              | Contains network security group     |   
+| network.tf          | Contains network settings     |
+| storage.tf          | Contains storage account settings     |
+| vm-1.tf             | Jira virtual machine |
+| lb.tf               | Load balancer     |
+| sql_db.tf           | Azure SQL DB     |
+
 
 Note: variables.tf should be customized for your specific settings
 
