@@ -9,6 +9,8 @@ client_secret       = "---"
 tenant_id           = "---"
 ```
 
+(Create Service Principal)[https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal]
+
 Note: Above should be stored in a file called terraform.tfvars
 
 ## Terraform Files

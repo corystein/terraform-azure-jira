@@ -173,6 +173,7 @@ ExecReload=${TARGET_DIR}/bin/stop-jira.sh | sleep 60 | /${TARGET_DIR}/bin/start-
 [Install]
 WantedBy=multi-user.target
 EOL
+echo "Completed creating systemd file"
 
 echo "Enable Jira service..."
 systemctl enable jira.service
@@ -183,38 +184,37 @@ echo "Completed starting Jira service"
 echo "Jira service status..."
 systemctl status jira.service
 echo "Completed Jira status"
-echo "Completed creating systemd file"
 
-echo "Create database config file..."
-# Ref: https://confluence.atlassian.com/adminjiraserver073/connecting-jira-applications-to-sql-server-2014-861253050.html
-cat > "${HOME_DIR}/dbconfig.xml" <<EOL
-<jira-database-config>
-<name>defaultDS</name>
-<delegator-name>default</delegator-name>
-<database-type>mssql</database-type>
-<schema-name>jiraschema</schema-name>
-<jdbc-datasource>
-  <url>jdbc:sqlserver://dbserver:1433;databaseName=jiradb</url>
-  <driver-class>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver-class>
-  <username>jiradbuser</username>
-  <password>password</password>
-  <pool-min-size>20</pool-min-size>
-  <pool-max-size>20</pool-max-size>
-  <pool-max-wait>30000</pool-max-wait>
-  <pool-max-idle>20</pool-max-idle>
-  <pool-remove-abandoned>true</pool-remove-abandoned>
-  <pool-remove-abandoned-timeout>300</pool-remove-abandoned-timeout>
+# echo "Create database config file..."
+# # Ref: https://confluence.atlassian.com/adminjiraserver073/connecting-jira-applications-to-sql-server-2014-861253050.html
+# cat > "${HOME_DIR}/dbconfig.xml" <<EOL
+# <jira-database-config>
+# <name>defaultDS</name>
+# <delegator-name>default</delegator-name>
+# <database-type>mssql</database-type>
+# <schema-name>jiraschema</schema-name>
+# <jdbc-datasource>
+#   <url>jdbc:sqlserver://dbserver:1433;databaseName=jiradb</url>
+#   <driver-class>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver-class>
+#   <username>jiradbuser</username>
+#   <password>password</password>
+#   <pool-min-size>20</pool-min-size>
+#   <pool-max-size>20</pool-max-size>
+#   <pool-max-wait>30000</pool-max-wait>
+#   <pool-max-idle>20</pool-max-idle>
+#   <pool-remove-abandoned>true</pool-remove-abandoned>
+#   <pool-remove-abandoned-timeout>300</pool-remove-abandoned-timeout>
  
-  <validation-query>select 1</validation-query>
-  <min-evictable-idle-time-millis>60000</min-evictable-idle-time-millis>
-  <time-between-eviction-runs-millis>300000</time-between-eviction-runs-millis>
+#   <validation-query>select 1</validation-query>
+#   <min-evictable-idle-time-millis>60000</min-evictable-idle-time-millis>
+#   <time-between-eviction-runs-millis>300000</time-between-eviction-runs-millis>
 
-  <pool-test-while-idle>true</pool-test-while-idle>
-  <pool-test-on-borrow>false</pool-test-on-borrow>
-</jdbc-datasource>
-</jira-database-config>
-EOL
-echo "Completed creating database config file"
+#   <pool-test-while-idle>true</pool-test-while-idle>
+#   <pool-test-on-borrow>false</pool-test-on-borrow>
+# </jdbc-datasource>
+# </jira-database-config>
+# EOL
+# echo "Completed creating database config file"
 
 popd >/dev/null
 echo "Completed installing Jira"

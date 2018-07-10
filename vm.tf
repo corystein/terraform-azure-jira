@@ -112,7 +112,7 @@ resource "null_resource" "remote-exec-vm-1" {
     }
 
     inline = [
-      "echo \"${var.config["vm_password"]}\" | sudo -S -k bash -c /tmp/configJiraDb.sh -s ${azurerm_sql_server.sql_srv.fully_qualified_domain_name} -u ${azurerm_sql_server.sql_srv.administrator_login} -p ${azurerm_sql_server.sql_srv.administrator_login_password}",
+      "echo \"${var.config["vm_password"]}\" | sudo -S -k bash /tmp/configJiraDb.sh -s \"${azurerm_sql_server.sql_srv.fully_qualified_domain_name}\" -u \"${azurerm_sql_server.sql_srv.administrator_login}\" -p \"${azurerm_sql_server.sql_srv.administrator_login_password}\"",
     ]
   }
 
