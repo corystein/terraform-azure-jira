@@ -185,10 +185,10 @@ echo "Jira service status..."
 systemctl status jira.service
 echo "Completed Jira status"
 
-# echo "Create database config file..."
-# # Ref: https://confluence.atlassian.com/adminjiraserver073/connecting-jira-applications-to-sql-server-2014-861253050.html
-# cat > "${HOME_DIR}/dbconfig.xml" <<EOL
-# <jira-database-config>
+echo "Create database config file..."
+# Ref: https://confluence.atlassian.com/adminjiraserver073/connecting-jira-applications-to-sql-server-2014-861253050.html
+cat > "${HOME_DIR}/dbconfig.xml" <<EOL
+<jira-database-config>
 # <name>defaultDS</name>
 # <delegator-name>default</delegator-name>
 # <database-type>mssql</database-type>
@@ -212,9 +212,9 @@ echo "Completed Jira status"
 #   <pool-test-while-idle>true</pool-test-while-idle>
 #   <pool-test-on-borrow>false</pool-test-on-borrow>
 # </jdbc-datasource>
-# </jira-database-config>
-# EOL
-# echo "Completed creating database config file"
+</jira-database-config>
+EOL
+echo "Completed creating database config file"
 
 popd >/dev/null
 echo "Completed installing Jira"
@@ -226,10 +226,10 @@ echo "Completed installing Jira"
 # https://confluence.atlassian.com/jirakb/integrating-jira-with-nginx-426115340.html
 # https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-centos-7
 echo Adding Nginx repository...
-yum -y install epel-release
+yum install -y epel-release
 
 echo Installing Nginx...
-yum -y install nginx
+yum install -y nginx
 
 # Configure Nginx Sites For
 echo "Creating directories..."
