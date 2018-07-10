@@ -128,11 +128,24 @@ fi
 ####################################################################
 # Install packages
 ####################################################################
+# Ref: https://github.com/dbcli/mssql-cli/blob/master/doc/installation/linux.md#centos-7
+echo "Installing packages..."
 yum install -y curl
-curl https://packages.microsoft.com/config/rhel/7/prod.repo >/etc/yum.repos.d/msprod.repo
-yum install -y mssql-tools unixODBC-devel
+#curl https://packages.microsoft.com/config/rhel/7/prod.repo >/etc/yum.repos.d/msprod.repo
+#yum install -y mssql-tools
 
-echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >>~/.bash_profile
+# Import Microsoft repository key
+rpm --import https://packages.microsoft.com/keys/microsoft.asc
+
+# Register the Microsoft RedHat repository
+curl -o /etc/yum.repos.d/mssql-cli.repo https://packages.microsoft.com/config/rhel/7/prod.repo
+
+# Install mssql-cli
+yum install -y mssql-cli
+
+#yum install -y mssql-tools unixODBC-devel
+#echo 'export PATH="$PATH:/opt/mssql-tools/bin"' >>~/.bash_profile
+echo "Completed installation of packages"
 ####################################################################
 
 ####################################################################
