@@ -1,6 +1,7 @@
 param(
     [switch]$RemoveBeforeInstall,
-    [switch]$Destroy
+    [switch]$Destroy,
+    [switch]$UseTfVarsFile
 )
 
 # Stop script on any error
@@ -59,14 +60,18 @@ function main() {
         #return
 
         # Create tfvars file
-        if (Test-Path .\terraform.tfvars) { Remove-Item -Path .\terraform.tfvars -Force | Out-Null }
-        $terraformvars = @" 
+        if (-not($UseTfVarsFile)) {
+            if (Test-Path .\terraform.tfvars) { Remove-Item -Path .\terraform.tfvars -Force | Out-Null }
+            $terraformvars = @" 
 subscription_id = "$($Env:subscription_id)"
 client_id = "$($Env:client_id)"
 client_secret = "$($Env:client_secret)"
 tenant_id = "$($Env:tenant_id)"
 "@ 
-        $terraformvars | Out-File -FilePath .\terraform.tfvars -Encoding ASCII -Force
+            $terraformvars | Out-File -FilePath .\terraform.tfvars -Encoding ASCII -Force
+        } else {
+            Write-Warning "Using TfVars File"
+        }
 
         # init
         if (-not(Test-Path "./terraform")) {
